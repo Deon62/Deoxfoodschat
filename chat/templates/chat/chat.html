@@ -1,0 +1,469 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeoxFoods Chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #FD661D;
+            --primary-light: #ff8c4d;
+            --primary-dark: #d14b0b;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 20px;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+
+        .chat-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(253, 102, 29, 0.1);
+            height: calc(100vh - 100px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(45deg, rgba(253, 102, 29, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: var(--white);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        #input-area {
+            padding: 20px;
+            background-color: var(--white);
+            border-top: 1px solid rgba(253, 102, 29, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        #text-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid rgba(253, 102, 29, 0.2);
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #text-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(253, 102, 29, 0.1);
+        }
+
+        button {
+            padding: 15px 30px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        #input-mode {
+            padding: 10px;
+            border-radius: 20px;
+            border: 2px solid rgba(253, 102, 29, 0.2);
+            background-color: var(--white);
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: rgba(253, 102, 29, 0.1);
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .history-panel {
+            width: 30%;
+            background-color: #2c3e50;
+            padding: 20px;
+            border-right: 1px solid #34495e;
+            color: white;
+        }
+        
+        .history-panel h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        #charts-placeholder {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+        }
+        
+        .chat-panel {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 80%;
+            max-width: 800px;
+        }
+        
+        .mode-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+                  #modeButton {
+                      width: 40px;
+                      height: 40px;
+                      background-color: #3498db;
+                      color: white;
+                      border: none;
+                      border-radius: 4px;
+                      cursor: pointer;
+                      font-weight: bold;
+                      transition: all 0.3s;
+                      font-size: 12px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                  }
+                  .mode-dropdown {
+                      display: none;
+                      position: absolute;
+                      top: 45px;
+                      right: 0;
+                      background-color: white;
+                      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                      border-radius: 4px;
+                      min-width: 120px;
+                      z-index: 1001;
+                  }
+        
+                  .mode-dropdown.show {
+                      display: block;
+                  }
+        
+                  .mode-dropdown a {
+                      color: #333;
+                      padding: 12px 16px;
+                      text-decoration: none;
+                      display: block;
+                  }
+        
+                  .mode-dropdown a:hover {
+                      background-color: #f1f1f1;
+                  }
+              </style>
+</head>
+<body>
+    <div class="mode-toggle">
+        <button onclick="toggleDropdown()" id="modeButton">Mode</button>
+        <div class="mode-dropdown" id="modeDropdown">
+            <a href="#" onclick="selectMode('normal')">Normal </a>
+            <a href="#" onclick="selectMode('roast')">Roast </a>
+            <a href="#" onclick="selectMode('kiswahili')">swahil </a>
+        </div>
+    </div>
+    
+    
+    <div class="container">
+        <div class="history-panel">
+            <h2>Chat History</h2>
+            <div id="charts-placeholder">
+                Your chat history will be displayed here.
+            </div>
+        </div>
+        
+        <div class="chat-panel">
+            <!-- Your existing chat interface code here -->
+            <div class="chat-container">
+                <div class="header">
+                    <img src="{% static 'images/123.jpg' %}" alt="DeoxFoods Logo" class="logo">
+                    <h1>DeoxFoods Chat</h1>
+                </div>
+                
+
+                <div id="chat-messages"></div>
+                <div id="input-area">
+                    <input type="text" id="text-input" placeholder="Type your food order or question..." aria-label="Type your message">
+                    <button id="mic-button" aria-label="Voice input">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="send-button" aria-label="Send message">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRoastMode = false;
+          function toggleDropdown() {
+              document.getElementById('modeDropdown').classList.toggle('show');
+          }
+
+          function selectMode(mode) {
+              const button = document.getElementById('modeButton');
+              switch(mode) {
+                  case 'roast':
+                      button.style.backgroundColor = '#e74c3c';
+                      break;
+                  case 'kiswahili':
+                      button.style.backgroundColor = '#27ae60';
+                      break;
+                  default:
+                      button.style.backgroundColor = '#3498db';
+              }
+              isRoastMode = mode === 'roast';
+              isKiswahiliMode = mode === 'kiswahili';
+              document.getElementById('modeDropdown').classList.remove('show');
+          }
+
+          // Close dropdown when clicking outside
+          window.onclick = function(event) {
+              if (!event.target.matches('#modeButton')) {
+                  const dropdowns = document.getElementsByClassName('mode-dropdown');
+                  for (let dropdown of dropdowns) {
+                      if (dropdown.classList.contains('show')) {
+                          dropdown.classList.remove('show');
+                      }
+                  }
+              }
+          }
+
+
+        $('#mic-button').click(async function() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Voice input is not supported in your browser.');
+                return;
+            }
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks);
+                        sendVoiceMessage(audioBlob);
+                    };
+
+                    mediaRecorder.start();
+                    $(this).addClass('recording');
+                    $(this).find('i').removeClass('fa-microphone').addClass('fa-stop');
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    alert('Could not access your microphone.');
+                }
+            } else {
+                mediaRecorder.stop();
+                $(this).removeClass('recording');
+                $(this).find('i').removeClass('fa-stop').addClass('fa-microphone');
+            }
+        });
+          function sendVoiceMessage(audioBlob) {
+              const formData = new FormData();
+              formData.append('audio', audioBlob, 'voice.webm');
+              formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+              // Show recording indicator
+              displayMessage("Recording processed...", 'user');
+
+              $.ajax({
+                  url: '/process-voice/',
+                  method: 'POST',
+                  data: formData,
+                  processData: false,
+                  contentType: false,
+                  success: function(response) {
+                      // Remove the processing message
+                      $('#chat-messages .message:last').remove();
+            
+                      // Display transcribed text
+                      displayMessage(response.text, 'user');
+            
+                      // Get bot response
+                      $.ajax({
+                          url: '/get-response/',
+                          method: 'POST',
+                          data: {
+                              message: response.text,
+                              mode: isRoastMode ? 'roast' : 'normal',
+                              csrfmiddlewaretoken: '{{ csrf_token }}'
+                          },
+                          success: function(botResponse) {
+                              displayMessage(botResponse.text, 'bot');
+                          }
+                      });
+                  },
+                  error: function(xhr, status, error) {
+                      displayMessage("Voice processing failed. Please try again.", 'bot');
+                  }
+              });
+          }
+        
+
+        function sendMessage(message) {
+            if (!message.trim()) {
+                alert("Message cannot be empty.");
+                return;
+            }
+
+            $.ajax({
+                url: '/get-response/',
+                method: 'POST',
+                data: {
+                    message: message,
+                    mode: isRoastMode ? 'roast' : 'normal',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    displayMessage(message, 'user');
+                    displayMessage(response.text, 'bot');
+
+                    if (response.audio) {
+                        const audio = new Audio('data:audio/mp3;base64,' + response.audio);
+                        audio.play();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', status, error);
+                    alert('Something went wrong. Please try again later.');
+                }
+            });
+        }
+
+        function displayMessage(message, sender) {
+            const messageDiv = $('<div>')
+                .addClass('message')
+                .addClass(sender + '-message')
+                .text(message);
+            $('#chat-messages').append(messageDiv);
+            messageDiv[0].scrollIntoView({ behavior: 'smooth' });
+        }
+
+        $('#send-button').click(function() {
+            const message = $('#text-input').val();
+            sendMessage(message);
+            $('#text-input').val('');
+        });
+
+        $('#text-input').keypress(function(e) {
+            if (e.which == 13) {
+                $('#send-button').click();
+            }
+        });
+    </script>
+</body>
+</html>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    #mic-button {
+        padding: 15px;
+        background-color: #27ae60;
+        color: var(--white);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+
+    #mic-button.recording {
+        background-color: #ff4444;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
